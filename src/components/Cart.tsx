@@ -19,6 +19,9 @@ const Cart: React.FC<CartProps> = ({
   onCheckout,
   totalPrice
 }) => {
+  const deliveryCharge = totalPrice >= 599 ? 0 : 50;
+  const finalTotal = totalPrice + deliveryCharge;
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-end">
       <div className="bg-white h-full w-full max-w-lg overflow-y-auto">
@@ -103,10 +106,32 @@ const Cart: React.FC<CartProps> = ({
 
               {/* Order Summary */}
               <div className="border-t border-gray-100 pt-8 space-y-6">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-gray-600">
+                    <span className="font-light tracking-wide">Subtotal</span>
+                    <span className="font-light">₹{totalPrice.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-600">
+                    <span className="font-light tracking-wide">Delivery</span>
+                    <span className="font-light">
+                      {deliveryCharge === 0 ? (
+                        <span className="text-green-600">FREE</span>
+                      ) : (
+                        `₹${deliveryCharge}`
+                      )}
+                    </span>
+                  </div>
+                  {totalPrice < 599 && (
+                    <div className="text-xs text-gray-500 font-light">
+                      Add ₹{599 - totalPrice} more for FREE delivery
+                    </div>
+                  )}
+                </div>
+                
                 <div className="flex justify-between items-center">
                   <span className="text-xl font-light text-gray-900 tracking-wide">Total</span>
                   <span className="text-3xl font-light text-[#503e28] tracking-wide">
-                    ${totalPrice.toLocaleString()}
+                    ₹{finalTotal.toLocaleString()}
                   </span>
                 </div>
                 

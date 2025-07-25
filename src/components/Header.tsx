@@ -28,21 +28,8 @@ const Header: React.FC<HeaderProps> = ({
             </h1>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex space-x-12">
-            {['Rings', 'Necklaces', 'Earrings', 'Bracelets', 'Collections'].map((item) => (
-              <a
-                key={item}
-                href="#"
-                className="text-gray-700 hover:text-[#503e28] transition-colors font-light tracking-wide text-sm uppercase"
-              >
-                {item}
-              </a>
-            ))}
-          </nav>
-
           {/* Desktop Search */}
-          <div className="hidden lg:flex flex-1 max-w-sm mx-8">
+          <div className="hidden lg:flex flex-1 max-w-sm mx-auto">
             <div className="relative w-full">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -114,25 +101,14 @@ const Header: React.FC<HeaderProps> = ({
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="lg:hidden border-t border-gray-100 py-6">
-            <nav className="flex flex-col space-y-4">
-              {['Rings', 'Necklaces', 'Earrings', 'Bracelets', 'Collections'].map((item) => (
-                <a
-                  key={item}
-                  href="#"
-                  className="text-gray-700 hover:text-[#503e28] transition-colors font-light tracking-wide text-sm uppercase"
-                >
-                  {item}
-                </a>
-              ))}
-              <div className="flex space-x-6 pt-4 border-t border-gray-100">
-                <button className="p-2 text-gray-700 hover:text-[#503e28] transition-colors">
-                  <Heart className="w-5 h-5" />
-                </button>
-                <button className="p-2 text-gray-700 hover:text-[#503e28] transition-colors">
-                  <User className="w-5 h-5" />
-                </button>
-              </div>
-            </nav>
+            <div className="flex space-x-6 justify-center">
+              <button className="p-2 text-gray-700 hover:text-[#503e28] transition-colors">
+                <Heart className="w-5 h-5" />
+              </button>
+              <button className="p-2 text-gray-700 hover:text-[#503e28] transition-colors">
+                <User className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         )}
       </div>

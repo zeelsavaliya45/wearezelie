@@ -42,7 +42,7 @@ const Checkout: React.FC<CheckoutProps> = ({ items, totalPrice, onClose, onOrder
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const shipping = totalPrice > 1000 ? 0 : 50;
+  const shipping = totalPrice >= 599 ? 0 : 50;
   const tax = Math.round(totalPrice * 0.08);
   const finalTotal = totalPrice + shipping + tax;
 
@@ -207,7 +207,7 @@ const Checkout: React.FC<CheckoutProps> = ({ items, totalPrice, onClose, onOrder
                 >
                   <Lock className="w-5 h-5" />
                   <span>
-                    {isProcessing ? 'Processing...' : `Complete Order - $${finalTotal.toLocaleString()}`}
+                    {isProcessing ? 'Processing...' : `Complete Order - ₹${finalTotal.toLocaleString()}`}
                   </span>
                 </button>
               </form>
@@ -241,19 +241,19 @@ const Checkout: React.FC<CheckoutProps> = ({ items, totalPrice, onClose, onOrder
                 <div className="border-t border-gray-200 pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
-                    <span>${totalPrice.toLocaleString()}</span>
+                    <span>₹{totalPrice.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Shipping</span>
-                    <span>{shipping === 0 ? 'Free' : `$${shipping}`}</span>
+                    <span>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Tax</span>
-                    <span>${tax}</span>
+                    <span>₹{tax}</span>
                   </div>
                   <div className="flex justify-between font-semibold text-lg border-t border-gray-200 pt-2">
                     <span>Total</span>
-                    <span>${finalTotal.toLocaleString()}</span>
+                    <span>₹{finalTotal.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
