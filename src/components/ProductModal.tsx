@@ -122,7 +122,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, onAddToCa
               {/* Price */}
               <div className="py-4">
                 <span className="text-4xl font-light text-[#503e28] tracking-wide">
-                  ${product.price.toLocaleString()}
+                  ₹{product.price.toLocaleString()}
                 </span>
               </div>
 

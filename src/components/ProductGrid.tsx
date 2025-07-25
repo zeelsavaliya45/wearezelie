@@ -150,7 +150,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                     </h3>
                     
                     <p className="text-xl font-light text-[#503e28] tracking-wide">
-                      ${product.price.toLocaleString()}
+                      ₹{product.price.toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -231,7 +231,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                     </h3>
                     
                     <p className="text-lg font-light text-[#503e28] tracking-wide">
-                      ${product.price.toLocaleString()}
+                      ₹{product.price.toLocaleString()}
                     </p>
                   </div>
                 </div>
