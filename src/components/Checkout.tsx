@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, CreditCard, Lock } from 'lucide-react';
+import { X, CreditCard, Lock, Smartphone } from 'lucide-react';
 import { CartItem, CheckoutForm } from '../types';
 
 interface CheckoutProps {
@@ -18,23 +18,63 @@ const Checkout: React.FC<CheckoutProps> = ({ items, totalPrice, onClose, onOrder
     city: '',
     postalCode: '',
     country: '',
-    paymentMethod: 'card',
+    paymentMethod: 'googlepay',
     cardNumber: '',
     expiryDate: '',
     cvv: ''
   });
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'failed'>('idle');
+
+  const handleGooglePayPayment = () => {
+    const receiverUPI = 'zeelsavaliya35@okicici';
+    const amount = finalTotal;
+    const transactionNote = `Zelie Jewelry Order - ${items.length} items`;
+    
+    // Create UPI payment URL
+    const upiUrl = `upi://pay?pa=${receiverUPI}&pn=Zelie Jewelry&am=${amount}&cu=INR&tn=${encodeURIComponent(transactionNote)}`;
+    
+    // For mobile devices, try to open UPI apps directly
+    if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      window.location.href = upiUrl;
+      
+      // Show payment processing state
+      setPaymentStatus('processing');
+      
+      // Simulate payment verification (in real app, you'd verify with backend)
+      setTimeout(() => {
+        const confirmed = window.confirm('Have you completed the payment in your UPI app? Click OK if payment was successful, Cancel if failed.');
+        if (confirmed) {
+          setPaymentStatus('success');
+          setTimeout(() => {
+            onOrderComplete();
+          }, 1000);
+        } else {
+          setPaymentStatus('failed');
+          setTimeout(() => {
+            setPaymentStatus('idle');
+          }, 3000);
+        }
+      }, 2000);
+    } else {
+      // For desktop, show QR code or UPI ID
+      alert(`Please use your mobile device to pay via UPI.\n\nUPI ID: ${receiverUPI}\nAmount: ₹${amount}\nNote: ${transactionNote}`);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsProcessing(true);
     
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsProcessing(false);
-    onOrderComplete();
+    if (form.paymentMethod === 'googlepay') {
+      handleGooglePayPayment();
+    } else {
+      setIsProcessing(true);
+      // Simulate other payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setIsProcessing(false);
+      onOrderComplete();
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -153,6 +193,23 @@ const Checkout: React.FC<CheckoutProps> = ({ items, totalPrice, onClose, onOrder
                     <div className="flex items-center space-x-3">
                       <input
                         type="radio"
+                        id="googlepay"
+                        name="paymentMethod"
+                        value="googlepay"
+                        checked={form.paymentMethod === 'googlepay'}
+                        onChange={handleInputChange}
+                        className="text-[#503e28] focus:ring-[#503e28]"
+                      />
+                      <label htmlFor="googlepay" className="flex items-center space-x-2">
+                        <Smartphone className="w-5 h-5 text-blue-600" />
+                        <span>Google Pay / UPI</span>
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Recommended</span>
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="radio"
                         id="card"
                         name="paymentMethod"
                         value="card"
@@ -200,16 +257,74 @@ const Checkout: React.FC<CheckoutProps> = ({ items, totalPrice, onClose, onOrder
                   </div>
                 </div>
 
+                {/* Payment Status Messages */}
+                {paymentStatus === 'processing' && (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <span className="text-sm text-blue-800 font-medium">
+                        Redirecting to payment app... Complete payment and return here.
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                {paymentStatus === 'success' && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 bg-green-600 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      </div>
+                      <span className="text-sm text-green-800 font-medium">
+                        Payment successful! Processing your order...
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                {paymentStatus === 'failed' && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 bg-red-600 rounded-full flex items-center justify-center">
+                        <div className="w-1 h-1 bg-white rounded-full"></div>
+                      </div>
+                      <span className="text-sm text-red-800 font-medium">
+                        Payment failed. Please try again.
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  disabled={isProcessing}
+                  disabled={isProcessing || paymentStatus === 'processing'}
                   className="w-full bg-[#503e28] text-white py-4 px-6 rounded-lg font-semibold hover:bg-[#3d2f1f] transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Lock className="w-5 h-5" />
-                  <span>
-                    {isProcessing ? 'Processing...' : `Complete Order - ₹${finalTotal.toLocaleString()}`}
-                  </span>
+                  {form.paymentMethod === 'googlepay' ? (
+                    <>
+                      <Smartphone className="w-5 h-5" />
+                      <span>Pay with Google Pay - ₹{finalTotal.toLocaleString()}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-5 h-5" />
+                      <span>
+                        {isProcessing ? 'Processing...' : `Complete Order - ₹${finalTotal.toLocaleString()}`}
+                      </span>
+                    </>
+                  )}
                 </button>
+                
+                {form.paymentMethod === 'googlepay' && (
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500">
+                      You'll be redirected to your UPI app to complete the payment
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Receiver: zeelsavaliya35@okicici
+                    </p>
+                  </div>
+                )}
               </form>
             </div>
 
