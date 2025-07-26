@@ -69,7 +69,7 @@ const Hero: React.FC = () => {
           </span>
           <span className="text-sm font-light tracking-wide mx-8">
             Waterproof · Anti-tarnish · Skin-friendly · Order above ₹599 for FREE delivery
-          </div>
+          </span>
         </div>
       </div>
     </>
