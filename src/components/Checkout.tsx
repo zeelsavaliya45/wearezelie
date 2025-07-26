@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, CreditCard, Lock, Smartphone } from 'lucide-react';
 import { CartItem, CheckoutForm } from '../types';
+import axios from 'axios';
 
 interface CheckoutProps {
   items: CartItem[];
@@ -27,8 +28,50 @@ const Checkout: React.FC<CheckoutProps> = ({ items, totalPrice, onClose, onOrder
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'failed'>('idle');
 
-  const handleGooglePayPayment = () => {
-    const receiverUPI = 'zeelsavaliya35@okicici';
+  const handleGooglePayPayment = async () => {
+    setPaymentStatus('processing');
+    
+    try {
+      // Create Razorpay hosted checkout
+      const orderData = {
+        amount: finalTotal * 100, // Amount in paise
+        currency: 'INR',
+        receipt: `order_${Date.now()}`,
+        notes: {
+          customer_name: `${form.firstName} ${form.lastName}`,
+          customer_email: form.email,
+          items: items.map(item => `${item.product.name} x${item.quantity}`).join(', ')
+        }
+      };
+
+      // Create order with Razorpay
+      const response = await axios.post('https://api.razorpay.com/v1/orders', orderData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${btoa('rzp_test_your_key_id:your_key_secret')}` // Replace with your actual keys
+        }
+      });
+
+      const order = response.data;
+      
+      // Redirect to Razorpay hosted checkout
+      const checkoutUrl = `https://api.razorpay.com/v1/checkout/hosted?order_id=${order.id}&key_id=rzp_test_your_key_id`;
+      
+      // Open Razorpay checkout in new window
+      const paymentWindow = window.open(checkoutUrl, '_blank', 'width=800,height=600');
+      
+      // Listen for payment completion (you'll need to implement webhook handling)
+      const checkPaymentStatus = setInterval(async () => {
+        try {
+          // Check if payment window is closed
+          if (paymentWindow?.closed) {
+            clearInterval(checkPaymentStatus);
+            
+            // Verify payment status (in production, use webhooks)
+            const paymentVerification = await verifyPayment(order.id);
+            
+            if (paymentVerification.success) {
+              setPaymentStatus('success');
     const amount = finalTotal;
     const transactionNote = `Zelie Jewelry Order - ${items.length} items`;
     
@@ -47,6 +90,15 @@ const Checkout: React.FC<CheckoutProps> = ({ items, totalPrice, onClose, onOrder
         const confirmed = window.confirm('Have you completed the payment in your UPI app? Click OK if payment was successful, Cancel if failed.');
         if (confirmed) {
           setPaymentStatus('success');
+          
+          // Send email notification
+          sendPaymentNotification({
+            orderId: `ZEL${Date.now()}`,
+            amount: finalTotal,
+            items: items,
+            customerInfo: form
+          });
+          
           setTimeout(() => {
             onOrderComplete();
           }, 1000);
@@ -60,6 +112,31 @@ const Checkout: React.FC<CheckoutProps> = ({ items, totalPrice, onClose, onOrder
     } else {
       // For desktop, show QR code or UPI ID
       alert(`Please use your mobile device to pay via UPI.\n\nUPI ID: ${receiverUPI}\nAmount: ₹${amount}\nNote: ${transactionNote}`);
+      
+      // For desktop users, still show payment confirmation dialog
+      setTimeout(() => {
+        const confirmed = window.confirm('Have you completed the payment? Click OK if payment was successful, Cancel if failed.');
+        if (confirmed) {
+          setPaymentStatus('success');
+          
+          // Send email notification
+          sendPaymentNotification({
+            orderId: `ZEL${Date.now()}`,
+            amount: finalTotal,
+            items: items,
+            customerInfo: form
+          });
+          
+          setTimeout(() => {
+            onOrderComplete();
+          }, 1000);
+        } else {
+          setPaymentStatus('failed');
+          setTimeout(() => {
+            setPaymentStatus('idle');
+          }, 3000);
+        }
+      }, 3000);
     }
   };
 
