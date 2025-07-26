@@ -23,7 +23,7 @@ export interface CheckoutForm {
   city: string;
   postalCode: string;
   country: string;
-  paymentMethod: 'card' | 'paypal' | 'googlepay';
+  paymentMethod: 'card' | 'paypal';
   cardNumber?: string;
   expiryDate?: string;
   cvv?: string;
